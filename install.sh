@@ -1,5 +1,9 @@
 #!/bin/bash
 
+#bash <(curl -s -L https://raw.githubusercontent.com/EvilGenius-dot/RMS/main/install.sh)
+#bash <(curl -s -L -k https://raw.njuu.cf/EvilGenius-dot/RMS/main/install.sh)
+#bash <(curl -s -L -k https://hub.yzuu.cf/EvilGenius-dot/RMS/main/install.sh)
+#bash <(curl -s -L -k https://hub.nuaa.cf/EvilGenius-dot/RMS/main/install.sh)
 clear
 
 [ $(id -u) != "0" ] && { echo "请使用ROOT用户进行安装, 输入sudo -i切换。"; exit 1; }
