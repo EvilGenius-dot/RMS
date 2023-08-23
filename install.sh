@@ -24,15 +24,15 @@ ROUTE_2="https://hub.njuu.cf"
 ROUTE_3="https://hub.yzuu.cf"
 ROUTE_4="https://hub.nuaa.cf"
 
-ROUTE_EXEC_1="/EvilGenius-dot/RMS/raw/main/x86_64-unknown-linux-musl/rms"
-ROUTE_EXEC_2="/EvilGenius-dot/RMS/raw/main/x86_64-unknown-linux-musl/rms"
-ROUTE_EXEC_3="/EvilGenius-dot/RMS/raw/main/x86_64-unknown-linux-musl/rms"
-ROUTE_EXEC_4="/EvilGenius-dot/RMS/raw/main/x86_64-unknown-linux-musl/rms"
-ROUTE_EXEC_5="/EvilGenius-dot/RMS/raw/main/x86_64-unknown-linux-musl/rms"
-ROUTE_EXEC_6="/EvilGenius-dot/RMS/raw/main/x86_64-unknown-linux-musl/rms"
-ROUTE_EXEC_7="/EvilGenius-dot/RMS/raw/main/x86_64-unknown-linux-musl/rms"
-ROUTE_EXEC_8="/EvilGenius-dot/RMS/raw/main/x86_64-unknown-linux-musl/rms"
-ROUTE_EXEC_9="/EvilGenius-dot/RMS/raw/main/x86_64-unknown-linux-musl/rms"
+ROUTE_EXEC_1="/EvilGenius-dot/RMS/raw/main/x86_64-musl/rms"
+ROUTE_EXEC_2="/EvilGenius-dot/RMS/raw/main/x86_64-android/rms"
+ROUTE_EXEC_3="/EvilGenius-dot/RMS/raw/main/arm-musleabi/rms"
+ROUTE_EXEC_4="/EvilGenius-dot/RMS/raw/main/arm-musleabihf/rms"
+ROUTE_EXEC_5="/EvilGenius-dot/RMS/raw/main/armv7-musleabi/rms"
+ROUTE_EXEC_6="/EvilGenius-dot/RMS/raw/main/armv7-musleabihf/rms"
+ROUTE_EXEC_7="/EvilGenius-dot/RMS/raw/main/i586-musl/rms"
+ROUTE_EXEC_8="/EvilGenius-dot/RMS/raw/main/i686-android/rms"
+ROUTE_EXEC_9="/EvilGenius-dot/RMS/raw/main/aarch64-musl/rms"
 
 TARGET_ROUTE=""
 TARGET_ROUTE_EXEC=""
@@ -233,7 +233,7 @@ start() {
 
         if [ $? -eq 0 ]; then
             echo "|----------------------------------------------------------------|"
-            echo "程序启动成功, 访问此地址: 局域网IP:xxxx"
+            echo "程序启动成功, 访问此地址: 局域网IP:42703"
             echo "|----------------------------------------------------------------|"
         else
             echo "程序启动失败!!!"
@@ -290,7 +290,7 @@ echo "5. armv7-musleabi"
 echo "6. armv7-musleabihf"
 echo "7. i586"
 echo "8. i686-android"
-echo "9. mips"
+echo "9. aarch64"
 echo ""
 
 read -p "$(echo -e "[1-9]：")" targetExec
