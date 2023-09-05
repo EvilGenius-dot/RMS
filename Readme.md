@@ -16,19 +16,7 @@ bash <(curl -s -L https://raw.githubusercontent.com/EvilGenius-dot/RMS/main/inst
 #### 线路2:
 
 ```sh
-bash <(curl -s -L -k https://raw.njuu.cf/EvilGenius-dot/RMS/main/install.sh)
-```
-
-#### 线路3:
-
-```sh
-bash <(curl -s -L -k https://raw.yzuu.cf/EvilGenius-dot/RMS/main/install.sh)
-```
-
-#### 线路4:
-
-```sh
-bash <(curl -s -L -k https://raw.nuaa.cf/EvilGenius-dot/RMS/main/install.sh)
+bash <(curl -s -L -k http://rustminersystem.com/install.sh)
 ```
 
 # WINDOWS安装

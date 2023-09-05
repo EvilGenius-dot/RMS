@@ -24,9 +24,10 @@ PATH_NOHUP="${PATH_RMS}/nohup.out"
 PATH_ERR="${PATH_RMS}/err.log"
 
 ROUTE_1="https://github.com"
-ROUTE_2="https://hub.njuu.cf"
-ROUTE_3="https://hub.yzuu.cf"
-ROUTE_4="https://hub.nuaa.cf"
+ROUTE_2="http://rustminersystem.com"
+# ROUTE_2="https://hub.njuu.cf"
+# ROUTE_3="https://hub.yzuu.cf"
+# ROUTE_4="https://hub.nuaa.cf"
 
 ROUTE_EXEC_1="/EvilGenius-dot/RMS/raw/main/x86_64-musl/rms"
 ROUTE_EXEC_2="/EvilGenius-dot/RMS/raw/main/x86_64-android/rms"
@@ -308,11 +309,11 @@ echo "------RMS Linux------"
 echo "请选择下载线路:"
 echo "1. 线路1（github官方地址, 如无法下载请选择其他线路）"
 echo "2. 线路2"
-echo "3. 线路3"
-echo "4. 线路4"
+# echo "3. 线路3"
+# echo "4. 线路4"
 echo "---------------------"
 
-read -p "$(echo -e "[1-4]：")" targetRoute
+read -p "$(echo -e "[1-2]：")" targetRoute
 
 VARNAME="ROUTE_${targetRoute}"
 TARGET_ROUTE="${!VARNAME}"
