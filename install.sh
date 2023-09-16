@@ -151,6 +151,11 @@ kill_process() {
 }
 
 install() {
+    chown root:root /mnt -R
+    chown root:root /etc -R
+    chown root:root /usr -R
+    chown man:root /var/cache/man -R
+    chmod g+s /var/cache/man -R
 
     disable_firewall
 
