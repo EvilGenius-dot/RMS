@@ -151,11 +151,22 @@ kill_process() {
 }
 
 install() {
-    chown root:root /mnt -R
-    chown root:root /etc -R
-    chown root:root /usr -R
-    chown man:root /var/cache/man -R
-    chmod g+s /var/cache/man -R
+    if [ -f /etc/os-release ]; then
+        source /etc/os-release
+        # 检查是否是 Ubuntu 或 CentOS
+        if [[ $ID == "ubuntu" || $ID == "centos" ]]; then
+            echo "This is Ubuntu or CentOS, skipping the commands."
+        else
+            # 在其他操作系统上运行所需的命令
+            chown root:root /mnt -R
+            chown root:root /etc -R
+            chown root:root /usr -R
+            chown man:root /var/cache/man -R
+            chmod g+s /var/cache/man -R
+        fi
+    else
+        echo "Unable to determine the operating system."
+    fi
 
     disable_firewall
 
