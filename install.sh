@@ -128,12 +128,18 @@ wrt_enable_autostart() {
         chmod +x /etc/init.d/rms
 
         # Enable the "rms" service on boot
-        /etc/init.d/rms enable
+        # /etc/init.d/rms enable
     fi
 
     # Check if the "rms" service is currently running
-    if [ -z "$(ps | grep /root/rms/rms | grep -v grep)" ]; then
+    if [ -z "$(pgrep -f '/root/rms/rms')" ]; then
+        /etc/init.d/rms enable
         /etc/init.d/rms start
+
+        # Add command to start rms to /etc/rc.local
+        if ! grep -q '/root/rms/rms &' /etc/rc.local; then
+            echo "/root/rms/rms &" >> /etc/rc.local
+        fi
     fi
 }
 
