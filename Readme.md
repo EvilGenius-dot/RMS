@@ -19,6 +19,14 @@ bash <(curl -s -L https://raw.githubusercontent.com/EvilGenius-dot/RMS/main/inst
 bash <(curl -s -L -k http://rustminersystem.com/install.sh)
 ```
 
+## OPEN-WRT安装
+
+#### open-wrt输入以下命令进行安装
+
+```
+ wget -N http://rustminersystem.com/install.sh;chmod 777 ./install.sh;./install.sh
+```
+
 # WINDOWS安装
 
 ## 带有图形化界面的客户端
