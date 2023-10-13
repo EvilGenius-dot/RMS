@@ -126,15 +126,15 @@ wrt_enable_autostart() {
         chmod +x /etc/init.d/rms
     fi
 
-    # Start the "rms" service
-    /etc/init.d/rms enable
-    /etc/init.d/rms start
+    # Check if the "rms" service is currently running
+    if [ "$(pidof rms)" = "" ]; then
+        /etc/init.d/rms start
+    fi
 }
 
 # Function to stop auto-start and stop the program
 wrt_disable_autostart() {
     echo "wrt_set_disable"
-    # Check if the init script exists
     if [ -f /etc/init.d/rms ]; then
         # Stop the "rms" service
         /etc/init.d/rms stop
