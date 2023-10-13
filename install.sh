@@ -118,29 +118,24 @@ wrt_enable_autostart() {
     if [ ! -f /etc/init.d/rms ]; then
         # Create an init script for the "rms" service
         echo "#!/bin/sh /etc/rc.common" > /etc/init.d/rms
-        echo "START=95" >> /etc/init.d/rms
+        echo "USE_PROCD=1" >> /etc/init.d/rms
+        echo "START=99" >> /etc/init.d/rms
         echo "start() {" >> /etc/init.d/rms
-        echo "    echo 'Starting rms service in the background...'" >> /etc/init.d/rms
         echo "    /root/rms/rms &" >> /etc/init.d/rms
         echo "}" >> /etc/init.d/rms
+        
+        echo "PROG=/root/rms/rms" >> /etc/init.d/rms
+        echo "start_service(){" >> /etc/init.d/rms
+        echo "  procd_open_instance" >> /etc/init.d/rms
+        echo "  procd_set_param command \$PROG" >> /etc/init.d/rms
+        echo "  procd_set_param respawn" >> /etc/init.d/rms
+        echo "  procd_close_instance" >> /etc/init.d/rms
+        echo "}" >> /etc/init.d/rms
 
-        # Make the init script executable
         chmod +x /etc/init.d/rms
-
-        # Enable the "rms" service on boot
-        # /etc/init.d/rms enable
     fi
 
-    # Check if the "rms" service is currently running
-    if [ -z "$(pgrep -f '/root/rms/rms')" ]; then
-        /etc/init.d/rms enable
-        /etc/init.d/rms start
-
-        # Add command to start rms to /etc/rc.local
-        if ! grep -q '/root/rms/rms &' /etc/rc.local; then
-            echo "/root/rms/rms &" >> /etc/rc.local
-        fi
-    fi
+    /etc/init.d/rms start
 }
 
 # Function to stop auto-start and stop the program
