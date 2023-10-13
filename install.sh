@@ -116,8 +116,10 @@ wrt_enable_autostart() {
         echo "    /root/rms/rms &" >> /etc/init.d/rms
         echo "}" >> /etc/init.d/rms
         echo "enable() {" >> /etc/init.d/rms
-        echo "    echo 'Enabling rms service to start on boot...'" >> /etc/init.d/rms
-        echo "    /etc/init.d/rms enable" >> /etc/init.d/rms
+        echo "    if [ ! -e /etc/rc.d/S95rms ]; then" >> /etc/init.d/rms
+        echo "        echo 'Enabling rms service to start on boot...'" >> /etc/init.d/rms
+        echo "        /etc/init.d/rms enable" >> /etc/init.d/rms
+        echo "    fi" >> /etc/init.d/rms
         echo "}" >> /etc/init.d/rms
 
         # Make the init script executable
