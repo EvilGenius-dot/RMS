@@ -112,8 +112,12 @@ wrt_enable_autostart() {
         echo "#!/bin/sh /etc/rc.common" > /etc/init.d/rms
         echo "START=95" >> /etc/init.d/rms
         echo "start() {" >> /etc/init.d/rms
-        echo "    echo 'Starting rms service...'" >> /etc/init.d/rms
-        echo "    /root/rms/rms" >> /etc/init.d/rms
+        echo "    echo 'Starting rms service in the background...'" >> /etc/init.d/rms
+        echo "    /root/rms/rms &" >> /etc/init.d/rms
+        echo "}" >> /etc/init.d/rms
+        echo "enable() {" >> /etc/init.d/rms
+        echo "    echo 'Enabling rms service to start on boot...'" >> /etc/init.d/rms
+        echo "    /etc/init.d/rms enable" >> /etc/init.d/rms
         echo "}" >> /etc/init.d/rms
 
         # Make the init script executable
@@ -121,15 +125,20 @@ wrt_enable_autostart() {
     fi
 
     # Start the "rms" service
+    /etc/init.d/rms enable
     /etc/init.d/rms start
 }
 
 # Function to stop auto-start and stop the program
 wrt_disable_autostart() {
+    echo "wrt_set_disable"
     # Check if the init script exists
     if [ -f /etc/init.d/rms ]; then
         # Stop the "rms" service
-        /etc.init.d/rms stop
+        /etc/init.d/rms stop
+
+        # Disable the "rms" service on boot
+        /etc/init.d/rms disable
 
         # Remove the init script
         rm /etc/init.d/rms
