@@ -86,17 +86,25 @@ disable_firewall() {
 }
 
 check_process() {
-    if [[ $(uname) == "Linux" ]]; then
-        if pgrep -x "$1" >/dev/null; then
+    if [ "$IS_OPENWRT" = true ]; then
+        if pgrep -f "$1" >/dev/null; then
             return 0
         else
             return 1
         fi
     else
-        if ps aux | grep -v grep | grep "$1" >/dev/null; then
-            return 0
+        if [[ $(uname) == "Linux" ]]; then
+            if pgrep -x "$1" >/dev/null; then
+                return 0
+            else
+                return 1
+            fi
         else
-            return 1
+            if ps aux | grep -v grep | grep "$1" >/dev/null; then
+                return 0
+            else
+                return 1
+            fi
         fi
     fi
 }
@@ -115,19 +123,16 @@ wrt_enable_autostart() {
         echo "    echo 'Starting rms service in the background...'" >> /etc/init.d/rms
         echo "    /root/rms/rms &" >> /etc/init.d/rms
         echo "}" >> /etc/init.d/rms
-        echo "enable() {" >> /etc/init.d/rms
-        echo "    if [ ! -e /etc/rc.d/S95rms ]; then" >> /etc/init.d/rms
-        echo "        echo 'Enabling rms service to start on boot...'" >> /etc/init.d/rms
-        echo "        /etc/init.d/rms enable" >> /etc/init.d/rms
-        echo "    fi" >> /etc/init.d/rms
-        echo "}" >> /etc/init.d/rms
 
         # Make the init script executable
         chmod +x /etc/init.d/rms
+
+        # Enable the "rms" service on boot
+        /etc/init.d/rms enable
     fi
 
     # Check if the "rms" service is currently running
-    if [ "$(pidof rms)" = "" ]; then
+    if [ -z "$(ps | grep /root/rms/rms | grep -v grep)" ]; then
         /etc/init.d/rms start
     fi
 }
@@ -138,9 +143,6 @@ wrt_disable_autostart() {
     if [ -f /etc/init.d/rms ]; then
         # Stop the "rms" service
         /etc/init.d/rms stop
-
-        # Disable the "rms" service on boot
-        /etc/init.d/rms disable
 
         # Remove the init script
         rm /etc/init.d/rms
@@ -194,19 +196,32 @@ disable_autostart() {
 }
 
 kill_process() {
-    local process_name="$1"
-  local pids=($(pgrep "$process_name"))
-  if [ ${#pids[@]} -eq 0 ]; then
-    echo "未发现 $process_name 进程."
-    return 1
-  fi
-  for pid in "${pids[@]}"; do
-    echo "Stopping process $pid ..."
-    kill -TERM "$pid"
-  done
-  echo "终止 $process_name ."
+    if [ "$IS_OPENWRT" = true ]; then
+        local process_name="$1"
+        local pids=($(pgrep -f "$process_name"))
+        echo "WRT KILL IPD $pids"
+        if kill -9 "$pids" >/dev/null 2>&1; then
+            echo "已终止 $pids 进程."
+        else
+            echo "未发现 $pids 进程."
+            return 1
+        fi
+    else
+        local process_name="$1"
+        local pids=($(pgrep "$process_name"))
+        
+        if [ ${#pids[@]} -eq 0 ]; then
+            echo "未发现 $process_name 进程."
+            return 1
+        fi
+        for pid in "${pids[@]}"; do
+            echo "Stopping process $pid ..."
+            kill -TERM "$pid"
+        done
+        echo "终止 $process_name ."
+    fi
 
-  sleep 1
+    sleep 1
 }
 
 install() {
