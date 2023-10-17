@@ -135,6 +135,7 @@ wrt_enable_autostart() {
         chmod +x /etc/init.d/rms
     fi
 
+    /etc/init.d/rms enable
     /etc/init.d/rms start
 }
 
