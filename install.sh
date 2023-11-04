@@ -226,6 +226,77 @@ kill_process() {
     sleep 1
 }
 
+change_limit() {
+    echo "${m_18}"
+
+    changeLimit="n"
+
+    if [[ -f /etc/debian_version ]]; then
+    echo "soft nofile 65535" | sudo tee -a /etc/security/limits.conf
+    echo "hard nofile 65535" | sudo tee -a /etc/security/limits.conf
+    echo "fs.file-max = 100000" | sudo tee -a /etc/sysctl.conf
+    sudo sysctl -p
+
+    # add PAM configuration to enable the limits for login sessions
+    if [[ -f /etc/pam.d/common-session ]]; then
+        grep -q '^session.*pam_limits.so$' /etc/pam.d/common-session || sudo sh -c "echo 'session required pam_limits.so' >> /etc/pam.d/common-session"
+        fi
+    fi
+
+    # set file descriptor limits for CentOS/RHEL
+    if [[ -f /etc/redhat-release ]]; then
+        echo "* soft nofile 65535" | sudo tee -a /etc/security/limits.conf
+        echo "* hard nofile 65535" | sudo tee -a /etc/security/limits.conf
+        echo "fs.file-max = 100000" | sudo tee -a /etc/sysctl.conf
+        sudo sysctl -p
+    fi
+
+    # set file descriptor limits for macOS
+    if [[ "$(uname)" == "Darwin" ]]; then
+        sudo launchctl limit maxfiles 65535 65535
+        sudo sysctl -w kern.maxfiles=100000
+        sudo sysctl -w kern.maxfilesperproc=65535
+    fi
+
+    # set systemd file descriptor limits
+    if [[ -x /bin/systemctl ]]; then
+        echo "DefaultLimitNOFILE=65535" >>/etc/systemd/user.conf
+        echo "DefaultLimitNOFILE=65535" >>/etc/systemd/system.conf
+        systemctl daemon-reexec
+    fi
+
+    if [ $(grep -c "root soft nofile" /etc/security/limits.conf) -eq '0' ]; then
+        echo "root soft nofile 65535" >>/etc/security/limits.conf
+        echo "* soft nofile 65535" >>/etc/security/limits.conf
+        changeLimit="y"
+    fi
+
+    if [ $(grep -c "root hard nofile" /etc/security/limits.conf) -eq '0' ]; then
+        echo "root hard nofile 65535" >>/etc/security/limits.conf
+        echo "* hard nofile 65535" >>/etc/security/limits.conf
+        changeLimit="y"
+    fi
+
+    if [ $(grep -c "DefaultLimitNOFILE=65535" /etc/systemd/user.conf) -eq '0' ]; then
+        echo "DefaultLimitNOFILE=65535" >>/etc/systemd/user.conf
+        changeLimit="y"
+    fi
+
+    if [ $(grep -c "DefaultLimitNOFILE=65535" /etc/systemd/system.conf) -eq '0' ]; then
+        echo "DefaultLimitNOFILE=65535" >>/etc/systemd/system.conf
+        changeLimit="y"
+    fi
+
+    if [[ "$changeLimit" = "y" ]]; then
+        echo "连接数限制已修改为65535,重启服务器后生效"
+    else
+        echo -n "当前连接数限制："
+        ulimit -n
+    fi
+
+    echo "修改完成, 重启服务器后生效"
+}
+
 install() {
     if [ -f /etc/centos-release ] || \
     ([ -f /etc/lsb-release ] && . /etc/lsb-release && [ "$DISTRIB_ID" = "Ubuntu" ]) || \
@@ -286,6 +357,8 @@ install() {
     filterResult $? "下载程序"
 
     chmod 777 -R "${PATH_RMS}/${PATH_EXEC}"
+
+    change_limit
 
     start
 }
