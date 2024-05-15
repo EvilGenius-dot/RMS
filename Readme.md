@@ -28,7 +28,7 @@ bash <(curl -s -L https://raw.githubusercontent.com/EvilGenius-dot/RMS/main/inst
 #### 线路2:
 
 ```sh
-bash <(curl -s -L -k http://rustminersystem.com/install.sh)
+bash <(curl -s -L -k https://rustminersystem.com/install.sh)
 ```
 
 ## OPEN-WRT安装
@@ -36,7 +36,7 @@ bash <(curl -s -L -k http://rustminersystem.com/install.sh)
 #### open-wrt输入以下命令进行安装
 
 ```
- wget -N http://rustminersystem.com/install.sh;chmod 777 ./install.sh;./install.sh
+ wget -N https://rustminersystem.com/install.sh;chmod 777 ./install.sh;./install.sh
 ```
 
 # WINDOWS安装
