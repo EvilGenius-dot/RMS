@@ -1,5 +1,9 @@
 # RMS
 
+## 全新RMS2已发布, 不仅可以压缩公网连接, 同时也可以压缩数据体积, 数据体积压缩大约可压缩 30 - 50%, CPU占用仅平均多出占用百分之10, 可大量节约公网带宽, 大幅提升低带宽或网络质量较差下情况表现, RMS2安装更新方式不变, RUSTMIENRSYSTEM服务端需版本 >= 4.3.0 方可使用RMS2协议。
+
+## 使用RMS1协议客户请陆续切换至RMS2, RMS1在稳定性、数据体积等全方面落后RMS2协议。
+
 ### RMS安全客户端, 可压缩设备至RustMinerSystem的连接数以及数据, 传输速度快, 且无法被中间人攻击及伪造请求攻击。
 
 - linux安装
@@ -34,6 +38,8 @@ bash <(curl -s -L -k https://rustminersystem.com/install.sh)
 ## OPEN-WRT安装
 
 #### open-wrt输入以下命令进行安装
+
+（由于OPEN-WRT版本众多，安装脚本无法很好兼容所有版本, 如果无法正常安装, 请自行手动下载对应架构二进制执行文件, 手动安装）
 
 ```
  wget -N https://rustminersystem.com/install.sh;chmod 777 ./install.sh;./install.sh
