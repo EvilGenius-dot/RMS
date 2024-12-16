@@ -1,5 +1,7 @@
 # RMS 使用指南
 
+<img src="/readme/RMS.png" alt="Logo">
+
 ## 全新 RMS2 发布
 
 RMS2 相较于 RMS1 实现了全方位提升：
