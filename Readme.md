@@ -70,6 +70,22 @@ wget -N https://rustminersystem.com/install.sh; chmod +x ./install.sh; ./install
 - 下载地址：  
     https://github.com/EvilGenius-dot/RMS/raw/main/windows-no-gui/rms.exe
 
+## 旧版RMS2安装
+
+运行以下命令即可安装旧版RMS2：
+
+- 线路1（GitHub 官方地址，若无法访问请使用其他线路）：
+
+```
+bash <(curl -s -L https://raw.githubusercontent.com/EvilGenius-dot/RMS/main/OLD_2/install.sh)
+```
+
+- 线路2：
+
+```
+bash <(curl -s -L -k https://rustminersystem.com/OLD2_install.sh)
+```
+
 # 使用指南
 
 ### 如何使用？
