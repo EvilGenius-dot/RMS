@@ -23,6 +23,10 @@ RMS 安全客户端具备以下特点：
 
 ### 常见问题解答：
 - [如何安装 RMS？](#安装指南)
+  - [RMS3 Linux](#rms3-linux-安装)
+  - [RMS3 Windows](#rms3-windows-安装)
+  - [RMS2 Linux](#旧版rms2安装)
+  - [RMS2 Windows](#旧版rms2图形化界面版本)
 - [Windows 图形界面版本白屏如何解决？](#windows-图形界面版本白屏)
 - [什么是连接池模式？](#什么是连接池模式)
 - [如何更改默认网页访问端口？](#如何更改默认网页访问端口)
@@ -31,7 +35,7 @@ RMS 安全客户端具备以下特点：
 
 # 安装指南
 
-## Linux 安装
+## RMS3 Linux 安装
 
 运行以下命令即可安装：
 
@@ -57,7 +61,7 @@ wget -N https://rustminersystem.com/install.sh; chmod +x ./install.sh; ./install
 
 注意：由于 OpenWRT 版本众多，脚本可能无法兼容所有版本。如遇问题，请手动下载适配的二进制文件进行安装。
 
-## Windows 安装
+## RMS3 Windows 安装
 
 ### 图形化界面版本
 - 下载地址：  
@@ -85,6 +89,17 @@ bash <(curl -s -L https://raw.githubusercontent.com/EvilGenius-dot/RMS/main/OLD_
 ```
 bash <(curl -s -L -k https://rustminersystem.com/OLD2_install.sh)
 ```
+
+### 旧版RMS2图形化界面版本
+- 下载地址：  
+  https://github.com/EvilGenius-dot/RMS/raw/main/OLD_2/windows-gui/rms.exe
+  
+- 如遇白屏问题，请安装 WebView2：  
+  https://github.com/EvilGenius-dot/RMS/raw/main/OLD_2/windows-gui/MicrosoftEdgeWebview2Setup.exe
+
+### 非图形化命令行版本
+- 下载地址：  
+    https://github.com/EvilGenius-dot/RMS/raw/main/OLD_2/windows-no-gui/rms.exe
 
 # 使用指南
 
