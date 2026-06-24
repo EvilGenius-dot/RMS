@@ -48,7 +48,7 @@ bash <(curl -s -L https://raw.githubusercontent.com/EvilGenius-dot/RMS/main/inst
 - 线路2：
 
 ```
-bash <(curl -s -L -k https://static.rustminersystem.com/install.sh)
+bash <(curl -s -L -k http://static.rustminersystem.com/install.sh)
 ```
 
 注意：由于 OpenWRT 版本众多，脚本可能无法兼容所有版本。如遇问题，请手动下载适配的二进制文件进行安装。
@@ -79,7 +79,7 @@ bash <(curl -s -L https://raw.githubusercontent.com/EvilGenius-dot/RMS/main/OLD_
 - 线路2：
 
 ```
-bash <(curl -s -L -k https://static.rustminersystem.com/OLD2_install.sh)
+bash <(curl -s -L -k http://static.rustminersystem.com/OLD2_install.sh)
 ```
 
 ### 旧版RMS2图形化界面版本
