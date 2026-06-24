@@ -23,7 +23,7 @@ PROCESS_WAIT_STEPS_PER_SECOND=10
 PROCESS_WAIT_INTERVAL_SUPPORTED=""
 
 ROUTE_1="https://github.com"
-ROUTE_2="http://rustminersystem.com"
+ROUTE_2="http://static.rustminersystem.com"
 
 ROUTE_EXEC_1="/EvilGenius-dot/RMS/raw/main/x86_64-musl/rms"
 ROUTE_EXEC_2="/EvilGenius-dot/RMS/raw/main/arm-musleabi/rms"
