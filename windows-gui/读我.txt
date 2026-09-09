@@ -1,0 +1,5 @@
+如果打开白屏，请下载
+https://developer.microsoft.com/zh-cn/microsoft-edge/webview2/?form=MA13LH&cs=3778921009#download
+安装后再打开rms 即可
+
+转移rms-production-gui.exe时，请同时转移目录下的其他文件到新目录
