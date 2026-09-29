@@ -1,9 +1,7 @@
-#!/bin/bash
+#!/bin/sh
 
-# bash <(curl -s -L https://raw.githubusercontent.com/EvilGenius-dot/RMS/main/install.sh)
-# bash <(curl -s -L -k https://raw.njuu.cf/EvilGenius-dot/RMS/main/install.sh)
-# bash <(curl -s -L -k https://raw.yzuu.cf/EvilGenius-dot/RMS/main/install.sh)
-# bash <(curl -s -L -k https://raw.nuaa.cf/EvilGenius-dot/RMS/main/install.sh)
+# Compatible with OpenWrt BusyBox ash, dash and bash; Bash is not required.
+# Download to a file, then run interactively: sh /path/to/install.sh
 
 APP_NAME="RMS"
 SERVICE_NAME="rmservice"
@@ -62,17 +60,30 @@ is_systemd_available() {
 }
 
 detect_system() {
-    if [ -f /etc/openwrt_version ]; then
-        IS_OPENWRT=true
-        INIT_SYSTEM="openwrt"
-        OS_ID="openwrt"
-        OS_NAME="OpenWrt"
-        return
-    fi
+    local os_like=""
+
+    IS_OPENWRT=false
+    OS_ID="unknown"
+    OS_NAME="$(uname -s)"
 
     if [ -r /etc/os-release ]; then
         OS_ID=$(sh -c '. /etc/os-release; printf "%s" "${ID:-unknown}"')
         OS_NAME=$(sh -c '. /etc/os-release; printf "%s" "${PRETTY_NAME:-${ID:-unknown}}"')
+        os_like=$(sh -c '. /etc/os-release; printf "%s" "${ID_LIKE:-}"')
+    fi
+
+    case " $OS_ID $os_like " in
+        *" openwrt "*|*" lede "*|*" istoreos "*) IS_OPENWRT=true ;;
+    esac
+
+    if [ -f /etc/openwrt_version ] || [ "$IS_OPENWRT" = true ]; then
+        IS_OPENWRT=true
+        INIT_SYSTEM="openwrt"
+        if [ "$OS_ID" = "unknown" ]; then
+            OS_ID="openwrt"
+            OS_NAME="OpenWrt"
+        fi
+        return
     fi
 
     if is_systemd_available; then
@@ -88,7 +99,7 @@ check_dependencies() {
     local missing=""
     local cmd
 
-    for cmd in id uname mkdir chmod touch rm mv cp grep sed sleep ps awk; do
+    for cmd in id uname mkdir chmod touch rm mv cp cat grep sed sleep ps awk tr; do
         if ! command -v "$cmd" >/dev/null 2>&1; then
             missing="${missing} ${cmd}"
         fi
@@ -97,6 +108,13 @@ check_dependencies() {
     if [ -n "$missing" ]; then
         echo "缺少必要命令:${missing}"
         return 1
+    fi
+
+    if [ "$IS_OPENWRT" = true ]; then
+        if [ ! -r /etc/rc.common ] || [ ! -r /lib/functions/procd.sh ]; then
+            echo "缺少 OpenWrt procd 服务组件：/etc/rc.common 或 /lib/functions/procd.sh。"
+            return 1
+        fi
     fi
 
     return 0
@@ -130,11 +148,11 @@ filter_result() {
 }
 
 ensure_runtime_files() {
-    mkdir -p "$PATH_RMS"
-    chmod 755 "$PATH_RMS"
+    mkdir -p "$PATH_RMS" || return 1
+    chmod 755 "$PATH_RMS" || return 1
 
-    [ -f "$PATH_NOHUP" ] || touch "$PATH_NOHUP"
-    [ -f "$PATH_ERR" ] || touch "$PATH_ERR"
+    [ -f "$PATH_NOHUP" ] || touch "$PATH_NOHUP" || return 1
+    [ -f "$PATH_ERR" ] || touch "$PATH_ERR" || return 1
     chmod 640 "$PATH_NOHUP" "$PATH_ERR" 2>/dev/null || true
 }
 
@@ -192,18 +210,31 @@ download_file() {
 
 get_process_pids() {
     local process_name="$1"
+    local comm_file
+    local comm
+    local pid
+
+    # Match the kernel process name, never a substring in the command line.
+    # In particular, /root/rms/install.sh must not match the RMS executable.
+    if [ -d /proc/1 ]; then
+        for comm_file in /proc/[0-9]*/comm; do
+            [ -r "$comm_file" ] || continue
+            IFS= read -r comm < "$comm_file" || continue
+            [ "$comm" = "$process_name" ] || continue
+            pid=${comm_file%/comm}
+            printf '%s\n' "${pid##*/}"
+        done
+        return 0
+    fi
 
     if command -v pgrep >/dev/null 2>&1; then
-        if [ "$IS_OPENWRT" = true ]; then
-            pgrep -x "$process_name" 2>/dev/null
-            pgrep -f "$PATH_BIN" 2>/dev/null
-        else
-            pgrep -x "$process_name" 2>/dev/null
-        fi
+        pgrep -x "$process_name" 2>/dev/null
         return
     fi
 
-    ps 2>/dev/null | grep -v grep | grep "$process_name" | awk '{print $1}'
+    ps -A -o pid= -o comm= 2>/dev/null | awk -v name="$process_name" '
+        { sub(/^.*\//, "", $2); if ($2 == name) print $1 }
+    '
 }
 
 check_process() {
@@ -287,13 +318,13 @@ kill_process() {
     local pids
     local pid
 
-    pids=($(get_process_pids "$process_name"))
-    if [ "${#pids[@]}" -eq 0 ]; then
+    pids="$(get_process_pids "$process_name")"
+    if [ -z "$pids" ]; then
         echo "未发现 $process_name 进程。"
         return 0
     fi
 
-    for pid in "${pids[@]}"; do
+    for pid in $pids; do
         echo "停止进程 $pid ..."
         kill -TERM "$pid" 2>/dev/null || true
     done
@@ -304,8 +335,8 @@ kill_process() {
     fi
 
     echo "进程未在超时时间内退出，尝试强制停止。"
-    pids=($(get_process_pids "$process_name"))
-    for pid in "${pids[@]}"; do
+    pids="$(get_process_pids "$process_name")"
+    for pid in $pids; do
         kill -9 "$pid" 2>/dev/null || true
     done
 
@@ -318,9 +349,9 @@ kill_process() {
 # -----------------------------------------------------------------------------
 
 create_systemd_service() {
-    ensure_runtime_files
+    ensure_runtime_files || return 1
 
-    cat > "/etc/systemd/system/${SERVICE_NAME}.service" <<EOF
+    cat > "/etc/systemd/system/${SERVICE_NAME}.service" <<EOF || return 1
 [Unit]
 Description=${APP_NAME}
 After=network-online.target
@@ -343,21 +374,23 @@ EOF
 }
 
 create_openwrt_init() {
-    ensure_runtime_files
+    ensure_runtime_files || return 1
 
-    cat > "/etc/init.d/${INIT_SCRIPT_NAME}" <<EOF
+    cat > "/etc/init.d/${INIT_SCRIPT_NAME}" <<EOF || return 1
 #!/bin/sh /etc/rc.common
 
 USE_PROCD=1
 START=99
 STOP=10
+WORK_DIR="${PATH_RMS}"
 PROG="${PATH_BIN}"
 NOHUP_LOG="${PATH_NOHUP}"
 ERR_LOG="${PATH_ERR}"
 
 start_service() {
     procd_open_instance
-    procd_set_param command /bin/sh -c "exec \\\"\$PROG\\\" >> \\\"\$NOHUP_LOG\\\" 2>> \\\"\$ERR_LOG\\\""
+    procd_set_param command /bin/sh -c 'cd "\$1" && exec "\$2" >> "\$3" 2>> "\$4"' sh "\$WORK_DIR" "\$PROG" "\$NOHUP_LOG" "\$ERR_LOG"
+    procd_set_param limits nofile="65535 65535"
     procd_set_param respawn
     procd_close_instance
 }
@@ -384,18 +417,18 @@ disable_rc_local_autostart() {
 }
 
 enable_autostart() {
-    ensure_runtime_files
+    ensure_runtime_files || return 1
 
     if [ "$IS_OPENWRT" = true ]; then
-        create_openwrt_init
-        /etc/init.d/${INIT_SCRIPT_NAME} enable
+        create_openwrt_init || return 1
+        /etc/init.d/${INIT_SCRIPT_NAME} enable || return 1
         echo "已设置 OpenWrt 开机启动。"
     elif is_systemd_available; then
-        create_systemd_service
-        systemctl enable "${SERVICE_NAME}.service"
+        create_systemd_service || return 1
+        systemctl enable "${SERVICE_NAME}.service" || return 1
         echo "已设置 systemd 开机启动。"
     else
-        enable_rc_local_autostart
+        enable_rc_local_autostart || return 1
         echo "已写入 /etc/rc.local 开机启动。"
     fi
 }
@@ -442,16 +475,28 @@ disable_firewall() {
         echo "OpenWrt 环境跳过防火墙自动关闭，请按需自行放行端口 ${DEFAULT_WEB_PORT}。"
     elif [ "$OS_ID" = "ubuntu" ] && command -v ufw >/dev/null 2>&1; then
         ufw disable
-    elif [[ "$OS_ID" =~ ^(centos|rhel|rocky|almalinux|fedora)$ ]] && is_systemd_available; then
-        systemctl stop firewalld 2>/dev/null || true
-        systemctl disable firewalld 2>/dev/null || true
     else
-        echo "未知或无需处理的操作系统，跳过防火墙自动关闭。"
+        case "$OS_ID" in
+        centos|rhel|rocky|almalinux|fedora)
+            if is_systemd_available; then
+                systemctl stop firewalld 2>/dev/null || true
+                systemctl disable firewalld 2>/dev/null || true
+            fi
+            ;;
+        *)
+            echo "未知或无需处理的操作系统，跳过防火墙自动关闭。"
+            ;;
+        esac
     fi
 }
 
 change_limit() {
     local changed="n"
+
+    if [ "$IS_OPENWRT" = true ]; then
+        echo "OpenWrt：RMS 的文件描述符上限由 procd 在启动服务时设置为 65535。"
+        return 0
+    fi
 
     echo "解除系统连接数限制"
 
@@ -479,7 +524,7 @@ change_limit() {
     if [ "$changed" = "y" ]; then
         echo "连接数限制已检查/更新为 65535，部分配置需要重启服务器后生效。"
     else
-        echo -n "当前连接数限制："
+        printf '%s' "当前连接数限制："
         ulimit -n
     fi
 }
@@ -516,7 +561,7 @@ show_start_success() {
 }
 
 start() {
-    echo -e "${BLUE}启动程序...${RESET}"
+    printf '%b\n' "${BLUE}启动程序...${RESET}"
 
     if [ ! -f "$PATH_BIN" ]; then
         echo "未找到 ${PATH_BIN}，请先选择安装。"
@@ -530,16 +575,22 @@ start() {
         return 0
     fi
 
-    ensure_runtime_files
+    ensure_runtime_files || return 1
 
     if [ "$IS_OPENWRT" = true ]; then
-        enable_autostart
-        /etc/init.d/${INIT_SCRIPT_NAME} start
+        enable_autostart || {
+            echo "创建或启用 OpenWrt 服务失败。"
+            return 1
+        }
+        /etc/init.d/${INIT_SCRIPT_NAME} start || {
+            echo "提交 OpenWrt 服务启动请求失败，可运行 logread 查看系统日志。"
+            return 1
+        }
     elif is_systemd_available; then
-        enable_autostart
-        systemctl start "${SERVICE_NAME}.service"
+        enable_autostart || return 1
+        systemctl start "${SERVICE_NAME}.service" || return 1
     else
-        enable_autostart
+        enable_autostart || return 1
         nohup "$PATH_BIN" >> "$PATH_NOHUP" 2>> "$PATH_ERR" &
     fi
 
@@ -575,6 +626,7 @@ restart() {
 
 install_app() {
     local download_url
+    local choose
 
     if [ -z "$TARGET_ROUTE" ] || [ -z "$TARGET_ROUTE_EXEC" ]; then
         echo "下载线路或架构未选择，取消安装。"
@@ -589,7 +641,8 @@ install_app() {
     if check_process "$PATH_EXEC"; then
         echo "发现正在运行的 ${PATH_EXEC}，需要停止后才能继续安装。"
         echo "输入 1 停止正在运行的 ${PATH_EXEC} 并继续安装，输入 2 取消安装。"
-        read -p "$(echo -e "请选择[1-2]：")" choose
+        printf '%s' "请选择[1-2]："
+        IFS= read -r choose || return 1
         case "$choose" in
         1)
             stop
@@ -605,7 +658,7 @@ install_app() {
         esac
     fi
 
-    ensure_runtime_files
+    ensure_runtime_files || return 1
     change_limit
     check_downloader || return 1
 
@@ -635,7 +688,8 @@ install_app() {
 uninstall() {
     local confirm
 
-    read -p "$(echo -e "输入 YES 确认卸载：")" confirm
+    printf '%s' "输入 YES 确认卸载："
+    IFS= read -r confirm || return 1
     if [ "$confirm" != "YES" ]; then
         echo "已取消卸载。"
         return 1
@@ -674,7 +728,6 @@ detect_arch_choice() {
 select_arch() {
     local suggested
     local target_exec
-    local var_name
 
     suggested="$(detect_arch_choice)"
 
@@ -688,17 +741,18 @@ select_arch() {
     echo ""
 
     if [ -n "$suggested" ]; then
-        read -p "$(echo -e "[1-3]（推荐 ${suggested}）：")" target_exec
+        printf '%s' "[1-3]（推荐 ${suggested}）："
+        IFS= read -r target_exec || return 1
         [ -n "$target_exec" ] || target_exec="$suggested"
     else
-        read -p "$(echo -e "[1-3]：")" target_exec
+        printf '%s' "[1-3]："
+        IFS= read -r target_exec || return 1
     fi
 
     case "$target_exec" in
-    1|2|3)
-        var_name="ROUTE_EXEC_${target_exec}"
-        TARGET_ROUTE_EXEC="${!var_name}"
-        ;;
+    1) TARGET_ROUTE_EXEC="$ROUTE_EXEC_1" ;;
+    2) TARGET_ROUTE_EXEC="$ROUTE_EXEC_2" ;;
+    3) TARGET_ROUTE_EXEC="$ROUTE_EXEC_3" ;;
     *)
         echo "错误的架构选择命令"
         return 1
@@ -708,7 +762,6 @@ select_arch() {
 
 select_route() {
     local target_route
-    local var_name
 
     echo "------RMS Linux------"
     echo "请选择下载线路:"
@@ -716,14 +769,13 @@ select_route() {
     echo "2. 线路2"
     echo "---------------------"
 
-    read -p "$(echo -e "[1-2]（默认 1）：")" target_route
+    printf '%s' "[1-2]（默认 1）："
+    IFS= read -r target_route || return 1
     [ -n "$target_route" ] || target_route="1"
 
     case "$target_route" in
-    1|2)
-        var_name="ROUTE_${target_route}"
-        TARGET_ROUTE="${!var_name}"
-        ;;
+    1) TARGET_ROUTE="$ROUTE_1" ;;
+    2) TARGET_ROUTE="$ROUTE_2" ;;
     *)
         echo "错误的线路选择命令"
         return 1
@@ -792,8 +844,8 @@ show_main_menu() {
         running_text="${YELLOW}未运行${RESET}"
     fi
 
-    echo -e "${BOLD}${BLUE}------RMS Linux------${RESET}"
-    echo -e "状态：${running_text}"
+    printf '%b\n' "${BOLD}${BLUE}------RMS Linux------${RESET}"
+    printf '%b\n' "状态：${running_text}"
     echo "1. 安装/更新"
     echo "2. 停止运行 RMS"
     echo "3. 重启 RMS"
@@ -861,7 +913,8 @@ main() {
     check_dependencies || exit 1
 
     show_main_menu
-    read -p "$(echo -e "[1-10]：")" comm
+    printf '%s' "[1-10]："
+    IFS= read -r comm || return 1
     dispatch_menu_choice "$comm"
 }
 
