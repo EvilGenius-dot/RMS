@@ -40,12 +40,27 @@ RMS 通常部署在矿场局域网内。矿机连接本地 RMS 地址，由 RMS 
 | 负载均衡 | 一个本地端口可以配置多个兼容的远程服务地址 |
 | 运行监控 | 查看进出口连接、CPU、内存、网络和端口状态 |
 | 后台安全 | 支持访问密码和自定义安全访问路径 |
+| 上网行为模拟 | 使用真实浏览器访问公开网页，支持内容浏览、视频观看、共享限速和流量预算，默认关闭 |
 
 ## 控制台预览
 
 ![RMS 3.2.0 控制台预览](readme/rms-dashboard.jpg)
 
 > 截图使用脱敏的示例矿场数据，界面组件与样式来自 RMS 3.2.0 实际前端工程。
+
+## 上网行为模拟
+
+适用于包含该功能的新版 RMS，旧版需更新。功能默认关闭，主页右侧“上网行为模拟”卡片的开关立即启停已保存的配置；点击“配置”调整站点和参数，修改通过“保存并应用”生效。
+
+- 内容阅读：通过真实浏览器访问公开网页，随机选择允许范围内的内容链接，停留并滚动阅读。
+- 视频观看：可静音尝试播放视频，依据播放进度确认真实播放，再按配置观看和切换；遇到登录、验证码或无法播放时跳过，不自动登录或绕过验证。
+- 站点配置：提供百度、贴吧、抖音、哔哩哔哩等预设站点，支持添加带名称的自定义公网 HTTPS 站点，保存后重启仍保留。
+- 访问日志：查看最近 200 条页面及资源请求的 URL、状态、耗时、大小和错误原因；日志仅保存在内存中，重启后清空。
+- 流量与保护：所有浏览连接共享上下行限速和每日流量预算，达到 CPU 或运行负载保护条件时暂停浏览。
+
+正式发布包内置浏览器，关闭时不释放或启动；首次开启时校验并释放到程序旁的运行库目录，需要程序目录可写，并建议预留至少 3 GiB 额外空间。浏览器仍须满足对应系统、内核和沙箱要求，Linux 以 root 运行或沙箱能力不足时可能无法启动；不能据此认定任意 OpenWrt 或旧系统均可使用。
+
+该功能使用移动浏览器参数，不等同于真实手机的完整指纹。浏览和视频播放仍会占用 CPU、内存、磁盘及带宽，保护机制不能保证完全不影响挖矿；目标站点的访问和播放也可能受网站限制。配置说明见[上网行为模拟文档](https://minerproxy.org/zh/document/rms/mobile-browsing)。
 
 ## 协议怎么选
 
@@ -253,6 +268,7 @@ Linux 脚本安装用户可以修改 `/root/rms/local.conf` 中的 `PORT`，保�
 - [端口映射](https://minerproxy.org/zh/document/rms/port-mapping)
 - [压缩设置](https://minerproxy.org/zh/document/rms/compression)
 - [监控与运维](https://minerproxy.org/zh/document/rms/monitoring)
+- [上网行为模拟](https://minerproxy.org/zh/document/rms/mobile-browsing)
 - [故障排查](https://minerproxy.org/zh/document/rms/troubleshooting)
 - [RustMinerSystem GitHub](https://github.com/EvilGenius-dot/RustMinerSystem)
 
