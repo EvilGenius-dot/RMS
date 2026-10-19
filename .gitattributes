@@ -1,0 +1,5 @@
+x86_64-musl/rms filter=lfs diff=lfs merge=lfs -text
+aarch64-musl/rms filter=lfs diff=lfs merge=lfs -text
+armv7-musleabihf/rms filter=lfs diff=lfs merge=lfs -text
+windows-gui/rms-production-gui.exe filter=lfs diff=lfs merge=lfs -text
+windows-no-gui/rms-production.exe filter=lfs diff=lfs merge=lfs -text
