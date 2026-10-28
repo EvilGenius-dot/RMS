@@ -22,7 +22,7 @@ PROCESS_WAIT_INTERVAL_SUPPORTED=""
 
 ROUTE_1="https://github.com"
 ROUTE_2="http://static.rustminersystem.com"
-ROUTE_3="https://static2.rustminersystem.com"
+ROUTE_3="https://static2.rustminersystem.com:19888"
 
 ROUTE_EXEC_1="/EvilGenius-dot/RMS/raw/main/x86_64-musl/rms"
 ROUTE_EXEC_2="/EvilGenius-dot/RMS/raw/main/armv7-musleabihf/rms"
