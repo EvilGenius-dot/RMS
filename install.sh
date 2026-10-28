@@ -765,10 +765,11 @@ select_route() {
     local target_route
 
     echo "------RMS Linux------"
-    echo "请选择下载线路:"
-    echo "1. 线路1（GitHub 官方地址，如无法下载请选择其他线路）"
+    echo "请选择下载线路："
+    echo "1. 线路1（GitHub）"
     echo "2. 线路2"
-    echo "3. 线路3（启东静态）"
+    echo "3. 线路3"
+    echo "提示：下载速度因网络环境而异，如下载失败或速度较慢，可重新运行脚本并尝试其他线路。"
     echo "---------------------"
 
     printf '%s' "[1-3]（默认 1）："
