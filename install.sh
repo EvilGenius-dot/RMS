@@ -22,6 +22,7 @@ PROCESS_WAIT_INTERVAL_SUPPORTED=""
 
 ROUTE_1="https://github.com"
 ROUTE_2="http://static.rustminersystem.com"
+ROUTE_3="https://static2.rustminersystem.com"
 
 ROUTE_EXEC_1="/EvilGenius-dot/RMS/raw/main/x86_64-musl/rms"
 ROUTE_EXEC_2="/EvilGenius-dot/RMS/raw/main/armv7-musleabihf/rms"
@@ -767,15 +768,17 @@ select_route() {
     echo "请选择下载线路:"
     echo "1. 线路1（GitHub 官方地址，如无法下载请选择其他线路）"
     echo "2. 线路2"
+    echo "3. 线路3（启东静态）"
     echo "---------------------"
 
-    printf '%s' "[1-2]（默认 1）："
+    printf '%s' "[1-3]（默认 1）："
     IFS= read -r target_route || return 1
     [ -n "$target_route" ] || target_route="1"
 
     case "$target_route" in
     1) TARGET_ROUTE="$ROUTE_1" ;;
     2) TARGET_ROUTE="$ROUTE_2" ;;
+    3) TARGET_ROUTE="$ROUTE_3" ;;
     *)
         echo "错误的线路选择命令"
         return 1
