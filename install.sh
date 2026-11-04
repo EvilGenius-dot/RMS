@@ -27,7 +27,6 @@ ROUTE_EXEC_1="/x86_64-musl/rms"
 ROUTE_EXEC_2="/armv7-musleabihf/rms"
 ROUTE_EXEC_3="/aarch64-musl/rms"
 
-RMS_EDITION="full"
 
 TARGET_ROUTE=""
 TARGET_ROUTE_EXEC=""
@@ -221,9 +220,9 @@ validate_download() {
     [ -s "$file" ] || return 1
     header=$(LC_ALL=C od -An -v -tx1 -N64 "$file" | tr -d ' \n') || return 1
     case "$TARGET_ROUTE_EXEC" in
-    "$ROUTE_EXEC_1"|"${ROUTE_EXEC_1}-lite") expected="7f454c46020101??????????????????????3e00*"; min_header=128 ;;
-    "$ROUTE_EXEC_2"|"${ROUTE_EXEC_2}-lite") expected="7f454c46010101??????????????????????2800*"; min_header=104 ;;
-    "$ROUTE_EXEC_3"|"${ROUTE_EXEC_3}-lite") expected="7f454c46020101??????????????????????b700*"; min_header=128 ;;
+    "$ROUTE_EXEC_1") expected="7f454c46020101??????????????????????3e00*"; min_header=128 ;;
+    "$ROUTE_EXEC_2") expected="7f454c46010101??????????????????????2800*"; min_header=104 ;;
+    "$ROUTE_EXEC_3") expected="7f454c46020101??????????????????????b700*"; min_header=128 ;;
     *) return 1 ;;
     esac
     [ "${#header}" -ge "$min_header" ] || return 1
@@ -700,10 +699,7 @@ install_app() (
 
     echo "开始安装/更新 ${APP_NAME}"
     echo "当前 CPU 架构：${UNAME}"
-    case "$TARGET_ROUTE_EXEC" in
-        *-lite) echo "安装版本：精简版（不含上网行为模拟）" ;;
-        *) echo "安装版本：完整版（带上网行为模拟）" ;;
-    esac
+    echo "安装版本：RMS 完整版（带轻量上网行为模拟，默认关闭）"
 
     if check_process "$PATH_EXEC"; then
         echo "发现正在运行的 ${PATH_EXEC}，下载和备份期间会继续运行。"
@@ -879,31 +875,75 @@ select_arch() {
     esac
 }
 
-select_edition() {
-    local choice
-    echo "请选择 RMS 版本："
-    echo "1. 完整版（带上网行为模拟，内置浏览器，体积较大）"
-    echo "2. 精简版（不含上网行为模拟，体积更小）"
-    printf '%s' "[1-2]（默认 1）："
-    IFS= read -r choice || return 1
-    case "$choice" in
-        ""|1) RMS_EDITION="full" ;;
-        2) RMS_EDITION="lite" ;;
-        *) echo "错误的版本选择，取消安装。"; return 1 ;;
+
+probe_route_latency() {
+    local result status elapsed code
+
+    # HEAD checks the selected binary without downloading it. Include DNS,
+    # connection, TLS and redirects in the displayed HTTP response time.
+    result=$(LC_ALL=C curl -q --silent --head --location --max-redirs 5 \
+        --connect-timeout 2 --max-time 4 --retry 0 --output /dev/null \
+        --write-out '%{http_code} %{time_total}' "$1" 2>/dev/null)
+    code=$?
+    case "$code" in
+        0) ;;
+        28) printf '%s\n' '超时'; return ;;
+        *) printf '%s\n' '连接失败'; return ;;
     esac
-    TARGET_ROUTE_EXEC="${TARGET_ROUTE_EXEC%-lite}"
-    [ "$RMS_EDITION" != lite ] || TARGET_ROUTE_EXEC="${TARGET_ROUTE_EXEC}-lite"
-    return 0
+    status=${result%% *}
+    elapsed=${result#* }
+    case "$status" in
+        2[0-9][0-9])
+            LC_ALL=C awk -v seconds="$elapsed" 'BEGIN {
+                if (seconds ~ /^[0-9]+([.][0-9]+)?$/)
+                    printf "%.0f ms\n", seconds * 1000;
+                else print "未检测";
+            }'
+            ;;
+        *) printf '不可用（HTTP %s）\n' "$status" ;;
+    esac
+}
+
+measure_route_latencies() {
+    local probe_dir pid1 pid2 pid3
+
+    ROUTE_LATENCY_1="未检测"
+    ROUTE_LATENCY_2="未检测"
+    ROUTE_LATENCY_3="未检测"
+    if ! command -v curl >/dev/null 2>&1; then
+        ROUTE_LATENCY_1="未检测（缺少 curl）"
+        ROUTE_LATENCY_2="$ROUTE_LATENCY_1"
+        ROUTE_LATENCY_3="$ROUTE_LATENCY_1"
+        return 0
+    fi
+    probe_dir=$(mktemp -d "${TMPDIR:-/tmp}/rms-route.XXXXXX" 2>/dev/null) || return 0
+    echo "正在检测线路响应延迟（最多约 4 秒）…"
+    probe_route_latency "${ROUTE_1}${TARGET_ROUTE_EXEC}" > "$probe_dir/1" &
+    pid1=$!
+    probe_route_latency "${ROUTE_2}${TARGET_ROUTE_EXEC}" > "$probe_dir/2" &
+    pid2=$!
+    probe_route_latency "${ROUTE_3}${TARGET_ROUTE_EXEC}" > "$probe_dir/3" &
+    pid3=$!
+    wait "$pid1" || true
+    wait "$pid2" || true
+    wait "$pid3" || true
+    ROUTE_LATENCY_1=$(cat "$probe_dir/1")
+    ROUTE_LATENCY_2=$(cat "$probe_dir/2")
+    ROUTE_LATENCY_3=$(cat "$probe_dir/3")
+    rm -rf -- "$probe_dir"
 }
 
 select_route() {
     local target_route
 
+    measure_route_latencies
+
     echo "------RMS Linux------"
     echo "请选择下载线路："
-    echo "1. 线路1（R2）"
-    echo "2. 线路2"
-    echo "3. 线路3"
+    echo "1. 线路1（R2）    ${ROUTE_LATENCY_1:-未检测}"
+    echo "2. 线路2        ${ROUTE_LATENCY_2:-未检测}"
+    echo "3. 线路3        ${ROUTE_LATENCY_3:-未检测}"
+    echo "提示：以上为 HTTP 响应延迟，仅供参考，不代表实际下载速度；未检测或检测失败仍可选择。"
     echo "提示：下载速度因网络环境而异，如下载失败或速度较慢，可重新运行脚本并尝试其他线路。"
     echo "---------------------"
 
@@ -1004,7 +1044,6 @@ dispatch_menu_choice() {
     case "$comm" in
     1)
         select_arch || return 1
-        select_edition || return 1
         clear 2>/dev/null || true
         select_route || return 1
         clear 2>/dev/null || true
