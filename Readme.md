@@ -40,7 +40,7 @@ RMS 通常部署在矿场局域网内。矿机连接本地 RMS 地址，由 RMS 
 | 负载均衡 | 一个本地端口可以配置多个兼容的远程服务地址 |
 | 运行监控 | 查看进出口连接、CPU、内存、网络和端口状态 |
 | 后台安全 | 支持访问密码和自定义安全访问路径 |
-| 上网行为模拟（仅完整版） | 使用真实浏览器访问公开网页，支持内容浏览、视频观看、共享限速和流量预算，默认关闭 |
+| 上网行为模拟 | 轻量访问公开网页、站内链接和资源，支持限速、流量预算与负载保护，默认关闭 |
 
 ## 控制台预览
 
@@ -48,33 +48,15 @@ RMS 通常部署在矿场局域网内。矿机连接本地 RMS 地址，由 RMS 
 
 > 截图使用脱敏的示例矿场数据，界面组件与样式来自 RMS 3.2.0 实际前端工程。
 
-## 版本选择
+## 统一完整版
 
-| 版本 | 上网行为模拟 | 程序体积 | 适合场景 |
-| --- | --- | --- | --- |
-| **完整版（非 Lite）** | 包含，内置浏览器，默认关闭 | 较大 | 需要上网行为模拟 |
-| **Lite 精简版** | 不包含，也不附带浏览器运行包 | 更小 | 只需要矿机接入与传输优化 |
-
-两版均保留矿机接入、协议压缩、加密传输、连接收敛、端口配置和运行监控。主要差异在程序体积；不需要上网行为模拟时可选 Lite。具体大小随平台和发布版本变化。
-
-- Linux：同架构目录下，`rms` 为完整版，`rms-lite` 为 Lite。
-- Windows：文件名带 `-lite.exe` 为 Lite，不带 `-lite` 为完整版；两版均提供 GUI 和命令行程序。
-
-新版安装脚本在选择架构后询问版本：`1` 完整版（默认），`2` Lite 精简版。两种版本均安装为 `/root/rms/rms`，共用原有配置与服务，可通过“安装/更新”切换；下载或启动失败时保留或恢复旧程序。Lite 不改写已保存的行为模拟设置，切回完整版后可继续使用。
+RMS 统一提供完整版，保留矿机接入、协议压缩、加密传输、连接收敛、端口配置和运行监控。安装脚本按架构直接安装，不再选择版本；旧用户通过“安装/更新”升级，沿用 `/root/rms/rms`、配置和服务，失败时保留或恢复旧程序。
 
 ## 上网行为模拟
 
-仅完整版（非 Lite）包含此功能；Lite 不提供开关或配置入口，卡片会提示下载完整版。旧版需更新至包含此功能的完整版。功能默认关闭，主页右侧“上网行为模拟”卡片的开关立即启停已保存的配置；点击“配置”调整站点和参数，修改通过“保存并应用”生效。
+轻量 HTTP/HTTPS 引擎随机访问公开网站、站内链接并下载页面资源，无需 Chrome，不执行 JavaScript 或播放视频。功能默认关闭，可在首页“上网行为模拟”卡片按需开启。配置保留每日预算、限速、资源并发、每页资源数量、单个资源大小及负载保护。
 
-- 内容阅读：通过真实浏览器访问公开网页，随机选择允许范围内的内容链接，停留并滚动阅读。
-- 视频观看：可静音尝试播放视频，依据播放进度确认真实播放，再按配置观看和切换；遇到登录、验证码或无法播放时跳过，不自动登录或绕过验证。
-- 站点配置：提供百度、贴吧、抖音、哔哩哔哩等预设站点，支持添加带名称的自定义公网 HTTPS 站点，保存后重启仍保留。
-- 访问日志：查看最近 200 条页面及资源请求的 URL、状态、耗时、大小和错误原因；日志仅保存在内存中，重启后清空。
-- 流量与保护：所有浏览连接共享上下行限速和每日流量预算，达到 CPU 或运行负载保护条件时暂停浏览。
-
-完整版正式发布包内置浏览器，关闭时不释放或启动；首次开启时校验并释放到程序旁的运行库目录，需要程序目录可写，并建议预留至少 3 GiB 额外空间。浏览器仍须满足对应系统、内核和沙箱要求，Linux 以 root 运行或沙箱能力不足时可能无法启动；不能据此认定任意 OpenWrt 或旧系统均可使用。
-
-该功能使用移动浏览器参数，不等同于真实手机的完整指纹。浏览和视频播放仍会占用 CPU、内存、磁盘及带宽，保护机制不能保证完全不影响挖矿；目标站点的访问和播放也可能受网站限制。配置说明见[上网行为模拟文档](https://minerproxy.org/zh/document/rms/mobile-browsing)。
+新配置默认选中全部预置站点，总开关仍关闭；支持按需调整选择和添加自定义站点，具体选项以当前版本界面为准。每日流量预算默认 1024 MiB，位于“流量与保护”首位；修改预算会建议下载上限，手动修改下载上限则同步理论每日预算，按 24 小时连续下载换算。实际预算统计本功能上下行合计，不保证用满预算或使网卡下行大于上行。请按实际可用带宽调整，避免影响正常业务。Windows GUI 需要 WebView2 Runtime 显示管理界面，与上网行为模拟引擎无关。
 
 ## 协议怎么选
 
@@ -93,12 +75,12 @@ RMS 通常部署在矿场局域网内。矿机连接本地 RMS 地址，由 RMS 
 | 平台 | 架构或版本 | 推荐方式 |
 | --- | --- | --- |
 | Linux | x86-64 | 安装脚本 |
-| Linux / OpenWrt | ARMv7 | 安装脚本或手动下载 |
-| Linux / OpenWrt | AArch64 | 安装脚本或手动下载 |
-| Windows | x64 图形界面 | 下载 GUI 客户端 |
-| Windows | x64 命令行 | 下载控制台客户端 |
+| Linux | ARMv7 | 安装脚本或手动下载 |
+| Linux | AArch64 | 安装脚本或手动下载 |
+| Windows 10/11 | x64 图形界面 | 下载 GUI 客户端 |
+| Windows 10/11 | x64 命令行 | 下载控制台客户端 |
 
-由于 OpenWrt 发行版和硬件差异较大，建议先确认 CPU 架构，并从少量矿机开始验证。
+当前支持范围为 Windows 10/11 x64，以及常规 Linux 的 x86_64、aarch64、ARMv7 hard-float。Windows 7/8/8.1 不在支持范围内；OpenWrt、旧内核和受限容器需单独验证，不能仅凭 CPU 架构相同认定兼容。
 
 ## Linux 快速安装
 
@@ -156,30 +138,28 @@ http://RMS设备IP:42703
 
 ## R2 全平台直接下载
 
-RMS 程序已迁移至 Cloudflare R2，GitHub 仓库不再提供二进制文件。下面列出当前全部 5 种平台／类型的完整版与 Lite，共 10 个下载入口。
+RMS 程序已迁移至 Cloudflare R2，GitHub 仓库不再提供二进制文件。下面列出当前全部 5 种平台／类型的完整版，共 5 个下载入口。
 
 这些固定链接会随发布更新为当前版本，不用于选择历史版本。当前版本号、文件大小与 SHA-256 请查看[发布清单](releases/rms.json)。Linux 用户也可继续使用上方安装脚本，原安装命令不变。
 
-### Linux / OpenWrt
+### Linux
 
-| 架构 | 平台目录 | 完整版 | Lite 精简版 |
-| --- | --- | --- | --- |
-| x86-64 | `x86_64-musl` | [下载 rms](https://shortcut.rustminersystem.com/RMS/x86_64-musl/rms) | [下载 rms-lite](https://shortcut.rustminersystem.com/RMS/x86_64-musl/rms-lite) |
-| ARMv7（hard-float） | `armv7-musleabihf` | [下载 rms](https://shortcut.rustminersystem.com/RMS/armv7-musleabihf/rms) | [下载 rms-lite](https://shortcut.rustminersystem.com/RMS/armv7-musleabihf/rms-lite) |
-| AArch64（ARM64） | `aarch64-musl` | [下载 rms](https://shortcut.rustminersystem.com/RMS/aarch64-musl/rms) | [下载 rms-lite](https://shortcut.rustminersystem.com/RMS/aarch64-musl/rms-lite) |
+| 架构 | 平台目录 | 完整版 |
+| --- | --- | --- |
+| x86-64 | `x86_64-musl` | [下载 rms](https://shortcut.rustminersystem.com/RMS/x86_64-musl/rms) |
+| ARMv7（hard-float） | `armv7-musleabihf` | [下载 rms](https://shortcut.rustminersystem.com/RMS/armv7-musleabihf/rms) |
+| AArch64（ARM64） | `aarch64-musl` | [下载 rms](https://shortcut.rustminersystem.com/RMS/aarch64-musl/rms) |
 
 手动下载时请先用 `uname -m` 确认架构。需要自动安装和服务管理时，使用上方的「Linux 快速安装」。
 
-### Windows x64
+### Windows 10/11 x64
 
 | 文件 | 下载 | 说明 |
 | --- | --- | --- |
-| 图形界面 · 完整版 | [rms-production-gui.exe](https://shortcut.rustminersystem.com/RMS/windows-gui/rms-production-gui.exe) | 带上网行为模拟及内置浏览器，体积较大 |
-| 图形界面 · Lite 精简版 | [rms-production-gui-lite.exe](https://shortcut.rustminersystem.com/RMS/windows-gui/rms-production-gui-lite.exe) | 不带上网行为模拟，体积更小 |
-| 命令行 · 完整版 | [rms-production.exe](https://shortcut.rustminersystem.com/RMS/windows-no-gui/rms-production.exe) | 带上网行为模拟及内置浏览器，体积较大 |
-| 命令行 · Lite 精简版 | [rms-production-lite.exe](https://shortcut.rustminersystem.com/RMS/windows-no-gui/rms-production-lite.exe) | 不带上网行为模拟，体积更小 |
+| 图形界面 · 完整版 | [rms-production-gui.exe](https://shortcut.rustminersystem.com/RMS/windows-gui/rms-production-gui.exe) | 带轻量上网行为模拟，默认关闭 |
+| 命令行 · 完整版 | [rms-production.exe](https://shortcut.rustminersystem.com/RMS/windows-no-gui/rms-production.exe) | 带轻量上网行为模拟，默认关闭 |
 
-两种 GUI 版本均已内置 WebView2 加载器，无需单独下载 `WebView2Loader.dll`；仍需要 Microsoft Edge WebView2 Runtime。若启动后白屏，请安装或更新 [Microsoft Edge WebView2 Runtime](https://developer.microsoft.com/microsoft-edge/webview2/consumer/) 后重试。Lite 去掉的是上网行为模拟所用的浏览器运行包，不影响 GUI 对 WebView2 Runtime 的需求。
+GUI 已内置 WebView2 加载器，无需单独下载 `WebView2Loader.dll`；仍需要 Microsoft Edge WebView2 Runtime。若启动后白屏，请安装或更新 [Microsoft Edge WebView2 Runtime](https://developer.microsoft.com/microsoft-edge/webview2/consumer/) 后重试。
 
 ## 首次配置
 
@@ -271,7 +251,14 @@ http://RMS设备IP:42703/private-path/
 <details>
 <summary><strong>Windows 图形界面打开后白屏</strong></summary>
 
-完整版和 Lite 的 GUI 均已内置 WebView2 加载器。请安装或更新 Microsoft Edge WebView2 Runtime 后重新启动 RMS。
+Windows GUI 需要 Microsoft Edge WebView2 Runtime 显示管理界面，内置加载器不等于完整 Runtime。缺失或检测失败时，RMS 会在启动后台业务前显示原生提示；请按提示安装或修复官方 x64 Runtime，或使用无界面版。界面创建失败时也会显示错误详情。无需单独下载 `WebView2Loader.dll`。
+
+</details>
+
+<details>
+<summary><strong>启动提示无法保存管理端口配置</strong></summary>
+
+检查 `local.conf` 所在目录的写入权限和磁盘空间。本次 HTTP 服务继续运行，以启动输出的端口为准；配置未保存时，重启后端口可能变化。
 
 </details>
 
@@ -310,6 +297,6 @@ Linux 脚本安装用户可以修改 `/root/rms/local.conf` 中的 `PORT`，保�
 
 ## 仓库说明
 
-本仓库维护 RMS 安装脚本、使用说明与发布清单 [`releases/rms.json`](releases/rms.json)。当前 Linux / Windows 完整版与 Lite 程序统一通过 Cloudflare R2 分发，下载地址为 `https://shortcut.rustminersystem.com/RMS/<平台>/<文件名>`。本仓库不再保存预编译程序；请通过以上 R2 链接或官网获取当前版本。
+本仓库维护 RMS 安装脚本、使用说明与发布清单 [`releases/rms.json`](releases/rms.json)。当前 Linux / Windows 完整版程序统一通过 Cloudflare R2 分发，下载地址为 `https://shortcut.rustminersystem.com/RMS/<平台>/<文件名>`。本仓库不再保存预编译程序；请通过以上 R2 链接或官网获取当前版本。
 
 历史部署仍可在当前客户端中选择 RMS2 协议连接兼容的服务端端口；RMS3 协议端口本身不向下兼容 RMS2。
