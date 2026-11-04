@@ -100,33 +100,6 @@ RMS 通常部署在矿场局域网内。矿机连接本地 RMS 地址，由 RMS 
 
 由于 OpenWrt 发行版和硬件差异较大，建议先确认 CPU 架构，并从少量矿机开始验证。
 
-## R2 全平台直接下载
-
-RMS 程序已迁移至 Cloudflare R2，GitHub 仓库不再提供二进制文件。下面列出当前全部 5 种平台／类型的完整版与 Lite，共 10 个下载入口。
-
-这些固定链接会随发布更新为当前版本，不用于选择历史版本。当前版本号、文件大小与 SHA-256 请查看[发布清单](releases/rms.json)。Linux 用户也可继续使用下方安装脚本，原安装命令不变。
-
-### Linux / OpenWrt
-
-| 架构 | 平台目录 | 完整版 | Lite 精简版 |
-| --- | --- | --- | --- |
-| x86-64 | `x86_64-musl` | [下载 rms](https://shortcut.rustminersystem.com/RMS/x86_64-musl/rms) | [下载 rms-lite](https://shortcut.rustminersystem.com/RMS/x86_64-musl/rms-lite) |
-| ARMv7（hard-float） | `armv7-musleabihf` | [下载 rms](https://shortcut.rustminersystem.com/RMS/armv7-musleabihf/rms) | [下载 rms-lite](https://shortcut.rustminersystem.com/RMS/armv7-musleabihf/rms-lite) |
-| AArch64（ARM64） | `aarch64-musl` | [下载 rms](https://shortcut.rustminersystem.com/RMS/aarch64-musl/rms) | [下载 rms-lite](https://shortcut.rustminersystem.com/RMS/aarch64-musl/rms-lite) |
-
-手动下载时请先用 `uname -m` 确认架构。需要自动安装和服务管理时，使用下方的「Linux 快速安装」。
-
-### Windows x64
-
-| 文件 | 下载 | 说明 |
-| --- | --- | --- |
-| 图形界面 · 完整版 | [rms-production-gui.exe](https://shortcut.rustminersystem.com/RMS/windows-gui/rms-production-gui.exe) | 带上网行为模拟及内置浏览器，体积较大 |
-| 图形界面 · Lite 精简版 | [rms-production-gui-lite.exe](https://shortcut.rustminersystem.com/RMS/windows-gui/rms-production-gui-lite.exe) | 不带上网行为模拟，体积更小 |
-| 命令行 · 完整版 | [rms-production.exe](https://shortcut.rustminersystem.com/RMS/windows-no-gui/rms-production.exe) | 带上网行为模拟及内置浏览器，体积较大 |
-| 命令行 · Lite 精简版 | [rms-production-lite.exe](https://shortcut.rustminersystem.com/RMS/windows-no-gui/rms-production-lite.exe) | 不带上网行为模拟，体积更小 |
-
-两种 GUI 版本均已内置 WebView2 加载器，无需单独下载 `WebView2Loader.dll`；仍需要 Microsoft Edge WebView2 Runtime。若启动后白屏，请安装或更新 [Microsoft Edge WebView2 Runtime](https://developer.microsoft.com/microsoft-edge/webview2/consumer/) 后重试。Lite 去掉的是上网行为模拟所用的浏览器运行包，不影响 GUI 对 WebView2 Runtime 的需求。
-
 ## Linux 快速安装
 
 安装前请确认：
@@ -180,6 +153,33 @@ http://RMS设备IP:42703
 
 > [!WARNING]
 > 生产环境执行前建议先审查 [`install.sh`](install.sh)。安装完成后，请根据实际网络重新配置防火墙，只允许可信局域网访问 RMS 管理端口和矿机监听端口。不要直接把 `42703` 管理端口暴露到公网。
+
+## R2 全平台直接下载
+
+RMS 程序已迁移至 Cloudflare R2，GitHub 仓库不再提供二进制文件。下面列出当前全部 5 种平台／类型的完整版与 Lite，共 10 个下载入口。
+
+这些固定链接会随发布更新为当前版本，不用于选择历史版本。当前版本号、文件大小与 SHA-256 请查看[发布清单](releases/rms.json)。Linux 用户也可继续使用上方安装脚本，原安装命令不变。
+
+### Linux / OpenWrt
+
+| 架构 | 平台目录 | 完整版 | Lite 精简版 |
+| --- | --- | --- | --- |
+| x86-64 | `x86_64-musl` | [下载 rms](https://shortcut.rustminersystem.com/RMS/x86_64-musl/rms) | [下载 rms-lite](https://shortcut.rustminersystem.com/RMS/x86_64-musl/rms-lite) |
+| ARMv7（hard-float） | `armv7-musleabihf` | [下载 rms](https://shortcut.rustminersystem.com/RMS/armv7-musleabihf/rms) | [下载 rms-lite](https://shortcut.rustminersystem.com/RMS/armv7-musleabihf/rms-lite) |
+| AArch64（ARM64） | `aarch64-musl` | [下载 rms](https://shortcut.rustminersystem.com/RMS/aarch64-musl/rms) | [下载 rms-lite](https://shortcut.rustminersystem.com/RMS/aarch64-musl/rms-lite) |
+
+手动下载时请先用 `uname -m` 确认架构。需要自动安装和服务管理时，使用上方的「Linux 快速安装」。
+
+### Windows x64
+
+| 文件 | 下载 | 说明 |
+| --- | --- | --- |
+| 图形界面 · 完整版 | [rms-production-gui.exe](https://shortcut.rustminersystem.com/RMS/windows-gui/rms-production-gui.exe) | 带上网行为模拟及内置浏览器，体积较大 |
+| 图形界面 · Lite 精简版 | [rms-production-gui-lite.exe](https://shortcut.rustminersystem.com/RMS/windows-gui/rms-production-gui-lite.exe) | 不带上网行为模拟，体积更小 |
+| 命令行 · 完整版 | [rms-production.exe](https://shortcut.rustminersystem.com/RMS/windows-no-gui/rms-production.exe) | 带上网行为模拟及内置浏览器，体积较大 |
+| 命令行 · Lite 精简版 | [rms-production-lite.exe](https://shortcut.rustminersystem.com/RMS/windows-no-gui/rms-production-lite.exe) | 不带上网行为模拟，体积更小 |
+
+两种 GUI 版本均已内置 WebView2 加载器，无需单独下载 `WebView2Loader.dll`；仍需要 Microsoft Edge WebView2 Runtime。若启动后白屏，请安装或更新 [Microsoft Edge WebView2 Runtime](https://developer.microsoft.com/microsoft-edge/webview2/consumer/) 后重试。Lite 去掉的是上网行为模拟所用的浏览器运行包，不影响 GUI 对 WebView2 Runtime 的需求。
 
 ## 首次配置
 
