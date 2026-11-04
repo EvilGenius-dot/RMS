@@ -1,0 +1,8 @@
+# RMS programs are published to R2, not Git.
+/x86_64-musl/
+/armv7-musleabihf/
+/aarch64-musl/
+/windows-gui/
+/windows-no-gui/
+__pycache__/
+.DS_Store

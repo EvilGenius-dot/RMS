@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 1,
+  "app": "RMS",
+  "version": "3.5.2",
+  "sourceCommit": "c5cafa169d19cf4341b12926933c443a2680e535",
+  "sourceVerified": false,
+  "releaseId": "3.5.2-a0478f02468fd8af217a",
+  "publicBaseUrl": "https://shortcut.rustminersystem.com",
+  "files": [
+    {
+      "path": "x86_64-musl/rms",
+      "size": 366267776,
+      "sha256": "ea68dae8edb8ee3a2396a537523aa160b10d84d8159baf2cb60813b5011cf24d",
+      "key": "RMS/x86_64-musl/rms",
+      "url": "https://shortcut.rustminersystem.com/RMS/x86_64-musl/rms"
+    },
+    {
+      "path": "armv7-musleabihf/rms",
+      "size": 336089975,
+      "sha256": "8f598e9eeccce19033a8e5c626ce3f6b22f7fc1bf2fcddfa2f7341d32d8d88fa",
+      "key": "RMS/armv7-musleabihf/rms",
+      "url": "https://shortcut.rustminersystem.com/RMS/armv7-musleabihf/rms"
+    },
+    {
+      "path": "aarch64-musl/rms",
+      "size": 365707816,
+      "sha256": "5af56b0b3b804728baed73345296b1be8b46e7e6550bac832cf6355897cf9393",
+      "key": "RMS/aarch64-musl/rms",
+      "url": "https://shortcut.rustminersystem.com/RMS/aarch64-musl/rms"
+    },
+    {
+      "path": "windows-no-gui/rms-production.exe",
+      "size": 221395736,
+      "sha256": "e26ce0df976af1712a1c662392f9961e335500fb9267332c7a4e173d3ab09333",
+      "key": "RMS/windows-no-gui/rms-production.exe",
+      "url": "https://shortcut.rustminersystem.com/RMS/windows-no-gui/rms-production.exe"
+    },
+    {
+      "path": "windows-gui/rms-production-gui.exe",
+      "size": 226706200,
+      "sha256": "9b5ab2dfcd830d45ead697475e08e5fe10ccb7e7085eea5c255cdd78586e5f23",
+      "key": "RMS/windows-gui/rms-production-gui.exe",
+      "url": "https://shortcut.rustminersystem.com/RMS/windows-gui/rms-production-gui.exe"
+    },
+    {
+      "path": "x86_64-musl/rms-lite",
+      "size": 7610720,
+      "sha256": "b3aab514e30878d1f01242f998a9580328d3b29ecb6685b5e02f20d21dab3d5a",
+      "key": "RMS/x86_64-musl/rms-lite",
+      "url": "https://shortcut.rustminersystem.com/RMS/x86_64-musl/rms-lite"
+    },
+    {
+      "path": "armv7-musleabihf/rms-lite",
+      "size": 7298660,
+      "sha256": "8f6521a90d899379bd6392dd27d9622b3d349e1638f8e5097040b85a308c1cdc",
+      "key": "RMS/armv7-musleabihf/rms-lite",
+      "url": "https://shortcut.rustminersystem.com/RMS/armv7-musleabihf/rms-lite"
+    },
+    {
+      "path": "aarch64-musl/rms-lite",
+      "size": 7502304,
+      "sha256": "a1ff4733e295e5af88dfe9f63a216bc696a4ae2d7d0d4cb6594d1b2db5bfec32",
+      "key": "RMS/aarch64-musl/rms-lite",
+      "url": "https://shortcut.rustminersystem.com/RMS/aarch64-musl/rms-lite"
+    },
+    {
+      "path": "windows-no-gui/rms-production-lite.exe",
+      "size": 14457344,
+      "sha256": "2a4e61fcb9a2997b6678d1858447f7bdb2f76536bdcc4b44548721b306584138",
+      "key": "RMS/windows-no-gui/rms-production-lite.exe",
+      "url": "https://shortcut.rustminersystem.com/RMS/windows-no-gui/rms-production-lite.exe"
+    },
+    {
+      "path": "windows-gui/rms-production-gui-lite.exe",
+      "size": 19866112,
+      "sha256": "18c836a791e806988ae42c220863274a4c1a4c08da0ab48ab7c25d3e36a486e7",
+      "key": "RMS/windows-gui/rms-production-gui-lite.exe",
+      "url": "https://shortcut.rustminersystem.com/RMS/windows-gui/rms-production-gui-lite.exe"
+    }
+  ]
+}
