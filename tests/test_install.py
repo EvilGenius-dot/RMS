@@ -133,6 +133,11 @@ class InstallTests(unittest.TestCase):
                 env = self.setup_case(root, mode, payload, installed, running, arch)
                 if prepare:
                     prepare(root)
+                if (root / "bin").is_dir():
+                    env["PATH"] = str(root / "bin") + os.pathsep + env["PATH"]
+                if (root / "isolated-bin").is_dir():
+                    env["PATH"] = str(root / "isolated-bin")
+                env["REAL_HEXDUMP"] = shutil.which("hexdump") or ""
                 result = subprocess.run([shell, "-c", HARNESS], env=env,
                                         input=answer, text=True, capture_output=True, timeout=10)
                 events = (root / "events").read_text().splitlines()
@@ -161,6 +166,69 @@ class InstallTests(unittest.TestCase):
             with self.subTest(arch=arch):
                 self.run_case(arch=arch, payload=payload,
                               verify=lambda r, p, e: self.assertEqual(p.returncode, 0, p.stdout))
+
+    @unittest.skipUnless(shutil.which("hexdump"), "requires hexdump")
+    def test_silent_od_falls_back_to_hexdump_without_weakening_validation(self):
+        def prepare(root):
+            binaries = root / "bin"
+            binaries.mkdir()
+            (binaries / "od").write_text("#!/bin/sh\nexit 0\n")
+            (binaries / "hexdump").write_text(
+                '#!/bin/sh\nprintf "called\\n" >> "$TEST_ROOT/hexdump-calls"\n'
+                'exec "$REAL_HEXDUMP" "$@"\n')
+            for path in binaries.iterdir():
+                path.chmod(0o755)
+
+        def valid(root, result, events):
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertTrue((root / "hexdump-calls").exists())
+            self.assertEqual((root / "install dir/rms").read_bytes(), elf(183, 2))
+
+        def invalid(root, result, events):
+            self.assertNotEqual(result.returncode, 0)
+            self.assertTrue((root / "hexdump-calls").exists())
+            self.assertNotIn("backup", events)
+            self.assertNotIn("stop", events)
+            self.assert_original(root)
+
+        self.run_case(arch="arm64", payload=elf(183, 2), prepare=prepare, verify=valid)
+        for payload in (elf(62, 2), elf(183, 2)[:20], b"<html>not an ELF</html>"):
+            with self.subTest(payload=payload[:20]):
+                self.run_case(arch="arm64", payload=payload, prepare=prepare, verify=invalid)
+
+    def test_failed_readers_do_not_replace_running_installation(self):
+        def prepare(root):
+            binaries = root / "bin"
+            binaries.mkdir()
+            (binaries / "od").write_text("#!/bin/sh\nexit 0\n")
+            (binaries / "hexdump").write_text("#!/bin/sh\nexit 1\n")
+            for path in binaries.iterdir():
+                path.chmod(0o755)
+
+        def verify(root, result, events):
+            self.assertNotEqual(result.returncode, 0)
+            self.assertNotIn("backup", events)
+            self.assertNotIn("stop", events)
+            self.assert_original(root)
+
+        self.run_case(arch="arm64", payload=elf(183, 2), prepare=prepare, verify=verify)
+
+    @unittest.skipUnless(shutil.which("hexdump"), "requires hexdump")
+    def test_hexdump_alone_is_sufficient(self):
+        def prepare(root):
+            binaries = root / "isolated-bin"
+            binaries.mkdir()
+            for name in ("id", "uname", "mkdir", "chmod", "touch", "rm", "mv", "cp",
+                         "cat", "grep", "sed", "sleep", "ps", "awk", "tr", "cmp", "hexdump"):
+                target = shutil.which(name)
+                if target:
+                    (binaries / name).symlink_to(target)
+
+        def verify(root, result, events):
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertEqual((root / "install dir/rms").read_bytes(), elf(183, 2))
+
+        self.run_case(arch="arm64", payload=elf(183, 2), prepare=prepare, verify=verify)
 
     def test_preparation_failures_never_stop_old_service(self):
         def verify(root, result, events):

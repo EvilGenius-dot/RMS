@@ -214,22 +214,35 @@ validate_download() {
     local header
     local expected
     local min_header
+    local reader
 
     # Check the ELF class, byte order and machine without executing the download.
     # This rejects empty files, HTML error pages, LFS pointers and wrong builds.
     [ -s "$file" ] || return 1
-    header=$(LC_ALL=C od -An -v -tx1 -N64 "$file" | tr -d ' \n') || return 1
     case "$TARGET_ROUTE_EXEC" in
     "$ROUTE_EXEC_1") expected="7f454c46020101??????????????????????3e00*"; min_header=128 ;;
     "$ROUTE_EXEC_2") expected="7f454c46010101??????????????????????2800*"; min_header=104 ;;
     "$ROUTE_EXEC_3") expected="7f454c46020101??????????????????????b700*"; min_header=128 ;;
     *) return 1 ;;
     esac
-    [ "${#header}" -ge "$min_header" ] || return 1
-    case "$header" in
-    $expected) return 0 ;;
-    *) return 1 ;;
-    esac
+    # Some embedded BusyBox builds have an od applet that silently returns no
+    # output. Try hexdump too when od is missing, fails, or yields a bad header.
+    for reader in od hexdump; do
+        command -v "$reader" >/dev/null 2>&1 || continue
+        case "$reader" in
+        od) header=$(LC_ALL=C od -An -v -tx1 -N64 "$file" 2>/dev/null) || continue ;;
+        hexdump) header=$(LC_ALL=C hexdump -v -n 64 -e '1/1 "%02x"' "$file" 2>/dev/null) || continue ;;
+        esac
+        header=$(printf '%s' "$header" | tr -d '[:space:]') || continue
+        case "$header" in
+        ''|*[!0123456789abcdef]*) continue ;;
+        esac
+        [ "${#header}" -ge "$min_header" ] || continue
+        case "$header" in
+        $expected) return 0 ;;
+        esac
+    done
+    return 1
 }
 
 get_process_pids() {
@@ -721,8 +734,8 @@ install_app() (
 
     ensure_runtime_files || return 1
     check_downloader || return 1
-    if ! command -v od >/dev/null 2>&1; then
-        echo "缺少文件检查工具 od，取消安装。"
+    if ! command -v od >/dev/null 2>&1 && ! command -v hexdump >/dev/null 2>&1; then
+        echo "缺少文件检查工具 od 和 hexdump，取消安装。"
         return 1
     fi
 
