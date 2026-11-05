@@ -233,7 +233,8 @@ validate_download() {
         od) header=$(LC_ALL=C od -An -v -tx1 -N64 "$file" 2>/dev/null) || continue ;;
         hexdump) header=$(LC_ALL=C hexdump -v -n 64 -e '1/1 "%02x"' "$file" 2>/dev/null) || continue ;;
         esac
-        header=$(printf '%s' "$header" | tr -d '[:space:]') || continue
+        # Character classes are optional in BusyBox tr; use explicit whitespace.
+        header=$(printf '%s' "$header" | LC_ALL=C tr -d ' \t\r\n') || continue
         case "$header" in
         ''|*[!0123456789abcdef]*) continue ;;
         esac

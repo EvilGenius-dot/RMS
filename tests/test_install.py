@@ -7,6 +7,7 @@ downloads, backups, renames, traps and ELF checks use actual files.
 import os
 from pathlib import Path
 import shutil
+import shlex
 import signal
 import struct
 import subprocess
@@ -212,6 +213,44 @@ class InstallTests(unittest.TestCase):
             self.assert_original(root)
 
         self.run_case(arch="arm64", payload=elf(183, 2), prepare=prepare, verify=verify)
+
+    @unittest.skipUnless(shutil.which("hexdump"), "requires hexdump")
+    def test_tr_without_character_classes_preserves_valid_headers(self):
+        real_tr = shlex.quote(shutil.which("tr"))
+        for silent_od in (False, True):
+            def prepare(root):
+                binaries = root / "bin"
+                binaries.mkdir()
+                # Without FEATURE_TR_CLASSES, BusyBox treats [:space:] as
+                # literal characters, deleting a/c/e from hexadecimal data.
+                (binaries / "tr").write_text(
+                    '#!/bin/sh\nif [ "$#" -eq 2 ] && [ "$1" = "-d" ] && '
+                    '[ "$2" = "[:space:]" ]; then\n'
+                    f"    exec {real_tr} -d '[]:space'\nfi\n"
+                    f'exec {real_tr} "$@"\n')
+                if silent_od:
+                    (binaries / "od").write_text("#!/bin/sh\nexit 0\n")
+                for path in binaries.iterdir():
+                    path.chmod(0o755)
+
+            def valid(root, result, events):
+                self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+                self.assertEqual((root / "install dir/rms").read_bytes(),
+                                 (root / "download").read_bytes())
+
+            def invalid(root, result, events):
+                self.assertNotEqual(result.returncode, 0)
+                self.assertNotIn("backup", events)
+                self.assertNotIn("stop", events)
+                self.assert_original(root)
+
+            for arch, payload in (("x64", elf()), ("arm", elf(40, 1)),
+                                  ("arm64", elf(183, 2))):
+                with self.subTest(silent_od=silent_od, arch=arch):
+                    self.run_case(arch=arch, payload=payload, prepare=prepare, verify=valid)
+            for payload in (elf(62, 2), elf(183, 2)[:20], b"<html>not an ELF</html>"):
+                with self.subTest(silent_od=silent_od, invalid=payload[:20]):
+                    self.run_case(arch="arm64", payload=payload, prepare=prepare, verify=invalid)
 
     @unittest.skipUnless(shutil.which("hexdump"), "requires hexdump")
     def test_hexdump_alone_is_sufficient(self):
